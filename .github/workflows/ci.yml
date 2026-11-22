@@ -44,11 +44,15 @@ jobs:
       - name: unit tests
         run: go test -race -count=1 ./...
 
-      - name: setup protoc
-        uses: arduino/setup-protoc@v3
-        with:
-          version: '3.19.4'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: install protoc (pinned, direct download)
+        run: |
+          curl -fsSL -o /tmp/protoc.zip \
+            https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protoc-3.19.4-linux-x86_64.zip
+          mkdir -p "$HOME/.local/protoc"
+          unzip -q /tmp/protoc.zip -d "$HOME/.local/protoc"
+          chmod +x "$HOME/.local/protoc/bin/protoc"
+          echo "$HOME/.local/protoc/bin" >> "$GITHUB_PATH"
+          echo "PROTO_INCLUDE=$HOME/.local/protoc/include" >> "$GITHUB_ENV"
 
       - name: install protoc plugins
         run: |
@@ -56,9 +60,7 @@ jobs:
           go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
 
       - name: regenerate stubs
-        run: |
-          PROTOC_INCLUDE="$(dirname "$(command -v protoc)")/../include"
-          PROTO_INCLUDE="$PROTOC_INCLUDE" ./scripts/gen.sh
+        run: ./scripts/gen.sh
 
       - name: generated artifacts must be clean
         run: git diff --exit-code -- gen/
