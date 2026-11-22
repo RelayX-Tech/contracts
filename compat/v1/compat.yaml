@@ -1,0 +1,6 @@
+# 合同 / core / schema / agent 兼容范围；xray 只读，不参与兼容判定。
+contract: ">=1.0.0 <2.0.0"
+core: ">=1.0.0 <2.0.0"
+schema: "1.x"
+agent: ">=1.0.0 <2.0.0"
+xray: "26.11.9"

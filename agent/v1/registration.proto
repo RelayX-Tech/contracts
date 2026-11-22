@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package relayx.agent.v1;
+
+option go_package = "github.com/relayx-tech/contracts/gen/go/agent/v1;agentv1";
+
+import "agent/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+// RegistrationService 是节点注册（预认证）合同（design §3.10）：
+// Agent 用一次性 Token + CSR 换取 Panel CA 签发的客户端证书，之后走 mTLS。
+service RegistrationService {
+  rpc Register(RegisterRequest) returns (RegisterResponse); // 预认证：server-auth TLS + 一次性 Token
+  rpc Renew(RenewRequest) returns (RegisterResponse);       // 已认证：mTLS
+  rpc GetCA(GetCARequest) returns (GetCAResponse);          // 返回 CA 证书链，供 Agent 校验证书
+}
+
+message RegisterRequest {
+  AgentRequestMeta meta = 1;
+  string token = 2;
+  string node_id = 3;
+  AgentNodeType node_type = 4;
+  bytes csr_pem = 5;
+}
+
+message RegisterResponse {
+  bytes cert_chain_pem = 1;
+  bytes ca_pem = 2;
+  google.protobuf.Timestamp not_after = 3;
+  string pinned_cert_fingerprint_sha256 = 4;
+}
+
+message RenewRequest {
+  AgentRequestMeta meta = 1;
+  bytes csr_pem = 2;
+}
+
+message GetCARequest {
+  AgentRequestMeta meta = 1;
+}
+
+message GetCAResponse {
+  bytes ca_pem = 1;
+}

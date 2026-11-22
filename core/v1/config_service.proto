@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package relayx.core.v1;
+
+option go_package = "github.com/relayx-tech/contracts/gen/go/core/v1;corev1";
+
+import "core/v1/common.proto";
+import "core/v1/config.proto";
+
+service ConfigService {
+  rpc Validate(ValidateRequest) returns (ValidateResponse);
+  rpc Generate(GenerateRequest) returns (GenerateResponse);
+  rpc GenerateBatch(GenerateBatchRequest) returns (GenerateBatchResponse);
+  rpc Preview(PreviewRequest) returns (PreviewResponse);
+}
+
+message ValidateRequest {
+  RequestMeta meta = 1;
+  NodeConfigSpec spec = 2;
+  bool strict = 3;              // true：warning 也视为失败
+}
+message ValidateResponse {
+  bool valid = 1;
+  repeated ErrorDetail errors = 2;
+  repeated Warning warnings = 3;
+  string schema_version = 4;
+}
+
+message GenerateRequest {
+  RequestMeta meta = 1;
+  NodeConfigSpec spec = 2;
+}
+message GenerateResponse {
+  string xray_config_json = 1;  // canonical JSON
+  string config_hash = 2;       // sha256 hex
+  string schema_version = 3;
+  string xray_version = 4;
+  repeated Warning warnings = 5;
+}
+
+message GenerateBatchRequest {
+  RequestMeta meta = 1;
+  string operation_id = 2;      // 批量操作幂等
+  repeated NodeConfigSpec items = 3;
+}
+message GenerateBatchResponse {
+  repeated GenerateResult items = 1;
+  repeated Warning warnings = 2;
+}
+message GenerateResult {
+  string node_id = 1;
+  bool ok = 2;
+  string xray_config_json = 3;
+  string config_hash = 4;
+  repeated ErrorDetail errors = 5;
+}
+
+message PreviewRequest {
+  RequestMeta meta = 1;
+  NodeConfigSpec spec = 2;
+  string base_config_json = 3;  // 可选：用于 diff
+}
+message PreviewResponse {
+  string xray_config_json = 1;
+  string config_hash = 2;
+  string diff = 3;              // unified diff；无 base 时为空
+  repeated Warning warnings = 4;
+}

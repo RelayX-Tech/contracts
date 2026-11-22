@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package relayx.core.v1;
+
+option go_package = "github.com/relayx-tech/contracts/gen/go/core/v1;corev1";
+
+import "google/protobuf/timestamp.proto";
+
+// RequestMeta 是全链路请求元数据；写操作必须携带 operation_id 用于幂等。
+message RequestMeta {
+  string request_id = 1;        // UUID；全链路透传
+  string operation_id = 2;      // 写操作必填；读操作可空
+  string contract_version = 3;  // 合同 semver，如 1.3.0
+  google.protobuf.Timestamp timestamp = 4; // UTC；签名防重放窗口 ±5 分钟
+  string nonce = 5;             // 防重放；16–64 字节
+  string actor = 6;             // panel / agent / system
+}
+
+// ErrorDetail 是 gRPC 统一错误载体（grpc-status-details-bin）。
+message ErrorDetail {
+  string code = 1;              // 稳定错误码
+  string field = 2;             // 可定位到字段的错误
+  repeated ErrorItem details = 3;
+  string request_id = 4;
+  bool retryable = 5;
+  string message = 6;           // 排障用；不作为产品文案
+}
+
+message ErrorItem {
+  string field = 1;
+  string code = 2;
+  string message = 3;
+}
+
+// BuildVersion 描述各版本层；xray_version 只读，不参与兼容判定。
+message BuildVersion {
+  string core_version = 1;
+  string schema_version = 2;
+  string contract_version = 3;
+  string agent_version = 4;
+  string xray_version = 5;
+}
+
+message Warning {
+  string code = 1;
+  string field = 2;
+  string message = 3;
+}
+
+enum NodeType {
+  NODE_TYPE_UNSPECIFIED = 0;
+  NODE_TYPE_ENTRY = 1;
+  NODE_TYPE_TUNNEL = 2;
+}

@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package relayx.core.v1;
+
+option go_package = "github.com/relayx-tech/contracts/gen/go/core/v1;corev1";
+
+import "core/v1/common.proto";
+import "core/v1/config.proto";
+
+service TunnelService {
+  rpc GenerateTunnel(GenerateTunnelRequest) returns (GenerateTunnelResponse);
+}
+
+message GenerateTunnelRequest {
+  RequestMeta meta = 1;
+  string tunnel_group_id = 2;
+  string port_group_id = 3;
+  string entry_node_id = 4;
+  string tunnel_node_id = 5;
+  repeated TunnelPortMapping mappings = 6; // 1:1；端口号独立
+}
+message GenerateTunnelResponse {
+  string entry_outbound_json = 1;  // 入口节点隧道出站
+  string tunnel_inbound_json = 2;  // 隧道节点隧道入站
+  repeated Material materials = 3; // TLS 证书 / 私钥 / UUID / shortId
+  repeated TunnelPortMapping mappings = 4;
+  repeated Warning warnings = 5;
+}

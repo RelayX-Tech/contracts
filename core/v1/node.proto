@@ -1,0 +1,147 @@
+syntax = "proto3";
+
+package relayx.core.v1;
+
+option go_package = "github.com/relayx-tech/contracts/gen/go/core/v1;corev1";
+
+import "core/v1/common.proto";
+import "core/v1/config.proto";
+import "google/protobuf/timestamp.proto";
+
+// NodeRuntimeService 由 core-node 实现，仅经本机 Unix socket 被 Agent 调用。
+service NodeRuntimeService {
+  rpc Apply(ApplyRequest) returns (ApplyResponse);
+  rpc Rollback(RollbackRequest) returns (RollbackResponse);
+  rpc KernelStart(KernelRequest) returns (KernelResponse);
+  rpc KernelStop(KernelRequest) returns (KernelResponse);
+  rpc KernelReload(KernelRequest) returns (KernelResponse);
+  rpc KernelStatus(KernelStatusRequest) returns (KernelStatusResponse);
+  rpc Perception(PerceptionRequest) returns (PerceptionResponse);
+}
+
+message ApplyRequest {
+  RequestMeta meta = 1;
+  string node_id = 2;
+  uint64 version = 3;           // 单调递增
+  string config_hash = 4;
+  string config_json = 5;       // canonical JSON
+  repeated Material materials = 6;
+  string schema_version = 7;
+  string xray_version = 8;      // 必须等于内置版本
+  uint64 restored_from_version = 9; // 仅回滚 / 恢复时填
+}
+message ApplyResponse {
+  bool accepted = 1;
+  string state = 2;             // APPLIED / FAILED / RESTORED
+  uint64 version = 3;
+  string applied_hash = 4;
+  KernelState kernel = 5;
+  ErrorDetail error = 6;
+  bool deduplicated = 7;
+}
+
+message RollbackRequest {
+  RequestMeta meta = 1;
+  string node_id = 2;
+  uint64 target_version = 3;    // 目标内容原版本
+  uint64 new_version = 4;       // Panel 分配的新单调版本
+  string config_hash = 5;
+  string config_json = 6;
+  repeated Material materials = 7;
+  string reason = 8;
+}
+message RollbackResponse {
+  bool accepted = 1;
+  string state = 2;
+  uint64 version = 3;
+  string applied_hash = 4;
+  KernelState kernel = 5;
+  ErrorDetail error = 6;
+  bool deduplicated = 7;
+}
+
+message KernelRequest {
+  RequestMeta meta = 1;
+  string node_id = 2;
+  bool force = 3;               // Stop / Reload 时可强制
+}
+message KernelResponse {
+  bool ok = 1;
+  KernelState kernel = 2;
+  ErrorDetail error = 3;
+}
+message KernelStatusRequest { RequestMeta meta = 1; string node_id = 2; }
+message KernelStatusResponse {
+  KernelState kernel = 1;
+  string last_known_good_version = 2;
+  string last_known_good_hash = 3;
+}
+
+message KernelState {
+  string state = 1;             // STOPPED / STARTING / RUNNING / RELOADING / FAILED
+  int32 pid = 2;
+  google.protobuf.Timestamp started_at = 3;
+  uint32 restarts = 4;
+  string xray_version = 5;
+  string config_hash = 6;
+  string last_error = 7;
+}
+
+message PerceptionRequest {
+  RequestMeta meta = 1;
+  string node_id = 2;
+  repeated string port_group_ids = 3;
+  bool include_traffic = 4;
+  bool include_connections = 5;
+  bool include_events = 6;
+}
+message PerceptionResponse {
+  ProcessPerception process = 1;
+  repeated InboundPerception inbounds = 2;
+  repeated OutboundPerception outbounds = 3;
+  TrafficPerception traffic = 4;
+  ConnectionPerception connections = 5;
+  ResourcePerception resources = 6;
+  repeated KernelEvent events = 7;
+}
+
+message ProcessPerception {
+  int32 pid = 1;
+  string state = 2;
+  uint64 uptime_seconds = 3;
+  uint32 goroutines = 4;
+  uint64 open_fds = 5;
+}
+message InboundPerception {
+  string tag = 1;
+  uint64 uplink_bytes = 2;
+  uint64 downlink_bytes = 3;
+  uint32 active_connections = 4;
+}
+message OutboundPerception {
+  string tag = 1;
+  uint64 uplink_bytes = 2;
+  uint64 downlink_bytes = 3;
+  uint32 active_connections = 4;
+}
+message TrafficPerception {
+  uint64 uplink_bytes = 1;
+  uint64 downlink_bytes = 2;
+  uint64 uplink_rate = 3;
+  uint64 downlink_rate = 4;
+}
+message ConnectionPerception {
+  uint32 total = 1;
+  uint32 tcp = 2;
+  uint32 udp = 3;
+}
+message ResourcePerception {
+  double cpu_percent = 1;
+  uint64 memory_bytes = 2;
+  uint32 thread_count = 3;
+}
+message KernelEvent {
+  string type = 1;
+  google.protobuf.Timestamp at = 2;
+  string message = 3;
+}

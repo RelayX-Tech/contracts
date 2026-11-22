@@ -1,0 +1,73 @@
+name: ci
+
+# 合同仓门禁：格式化 → 静态检查 → 单测 → 生成物一致 → 依赖边界 / 非目标 → 构建。
+# 生成物用固定 protoc 3.19.4 / protoc-gen-go v1.36.6 / protoc-gen-go-grpc v1.5.1 重生成，diff 必须为空。
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: setup go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: gofmt
+        run: |
+          unformatted="$(gofmt -l $(git ls-files '*.go'))"
+          if [ -n "$unformatted" ]; then
+            echo "以下文件未格式化，请运行 gofmt -w："
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: unit tests
+        run: go test -race -count=1 ./...
+
+      - name: setup protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          version: '3.19.4'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: install protoc plugins
+        run: |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.6
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
+
+      - name: regenerate stubs
+        run: |
+          PROTOC_INCLUDE="$(dirname "$(command -v protoc)")/../include"
+          PROTO_INCLUDE="$PROTOC_INCLUDE" ./scripts/gen.sh
+
+      - name: generated artifacts must be clean
+        run: git diff --exit-code -- gen/
+
+      - name: boundary
+        run: ./ci/boundary.sh
+
+      - name: non-goals scan
+        run: ./ci/non_goals_scan.sh
+
+      - name: build
+        run: go build ./...
