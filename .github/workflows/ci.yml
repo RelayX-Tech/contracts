@@ -60,16 +60,16 @@ jobs:
           go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
 
       - name: regenerate stubs
-        run: ./scripts/gen.sh
+        run: bash ./scripts/gen.sh
 
       - name: generated artifacts must be clean
         run: git diff --exit-code -- gen/
 
       - name: boundary
-        run: ./ci/boundary.sh
+        run: bash ./ci/boundary.sh
 
       - name: non-goals scan
-        run: ./ci/non_goals_scan.sh
+        run: bash ./ci/non_goals_scan.sh
 
       - name: build
         run: go build ./...
