@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package relayx.core.v1;
+
+option go_package = "github.com/relayx-tech/contracts/gen/go/core/v1;corev1";
+
+import "core/v1/common.proto";
+
+service VersionService {
+  rpc Info(VersionInfoRequest) returns (VersionInfoResponse);
+  rpc Capabilities(CapabilitiesRequest) returns (CapabilitiesResponse);
+}
+
+message VersionInfoRequest { RequestMeta meta = 1; }
+message VersionInfoResponse { BuildVersion version = 1; }
+
+message CapabilitiesRequest { RequestMeta meta = 1; }
+message CapabilitiesResponse {
+  string xray_version = 1;
+  repeated Capability capabilities = 2;
+}
+message Capability {
+  string protocol = 1;
+  repeated string transports = 2;
+  repeated string securities = 3;
+  repeated string required_fields = 4;
+  repeated string forbidden_fields = 5;
+}

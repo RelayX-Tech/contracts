@@ -1,0 +1,265 @@
+syntax = "proto3";
+
+package relayx.core.v1;
+
+option go_package = "github.com/relayx-tech/contracts/gen/go/core/v1;corev1";
+
+import "core/v1/common.proto";
+
+// 入站 10 类：TUN 排除、TUIC 移除。
+enum Protocol {
+  PROTOCOL_UNSPECIFIED = 0;
+  PROTOCOL_VMESS = 1;
+  PROTOCOL_VLESS = 2;
+  PROTOCOL_TROJAN = 3;
+  PROTOCOL_SHADOWSOCKS = 4;
+  PROTOCOL_SOCKS = 5;
+  PROTOCOL_HTTP = 6;
+  PROTOCOL_WIREGUARD = 7;
+  PROTOCOL_TUNNEL = 8;
+  PROTOCOL_HYSTERIA = 9;
+  PROTOCOL_MASQUE = 10;
+}
+
+// 传输 8 类：TCP 归一为 RAW；H2/HTTP/QUIC/SplitHTTP 归 XHTTP。
+enum Transport {
+  TRANSPORT_UNSPECIFIED = 0;
+  TRANSPORT_RAW = 1;
+  TRANSPORT_XHTTP = 2;
+  TRANSPORT_MKCP = 3;
+  TRANSPORT_GRPC = 4;
+  TRANSPORT_WEBSOCKET = 5;
+  TRANSPORT_HTTPUPGRADE = 6;
+  TRANSPORT_HYSTERIA = 7;
+  TRANSPORT_MASQUE = 8;
+}
+
+// 安全 3 类：无 / TLS / REALITY（REALITY 与 TLS 互斥）。
+enum Security {
+  SECURITY_UNSPECIFIED = 0;
+  SECURITY_NONE = 1;
+  SECURITY_TLS = 2;
+  SECURITY_REALITY = 3;
+}
+
+// 出站白名单协议。
+enum OutboundProtocol {
+  OUTBOUND_PROTOCOL_UNSPECIFIED = 0;
+  OUTBOUND_PROTOCOL_FREEDOM = 1;
+  OUTBOUND_PROTOCOL_BLACKHOLE = 2;
+  OUTBOUND_PROTOCOL_VMESS = 3;
+  OUTBOUND_PROTOCOL_VLESS = 4;
+  OUTBOUND_PROTOCOL_TROJAN = 5;
+  OUTBOUND_PROTOCOL_SHADOWSOCKS = 6;
+  OUTBOUND_PROTOCOL_SOCKS = 7;
+  OUTBOUND_PROTOCOL_HTTP = 8;
+  OUTBOUND_PROTOCOL_WIREGUARD = 9;
+  OUTBOUND_PROTOCOL_HYSTERIA = 10;
+  OUTBOUND_PROTOCOL_MASQUE = 11;
+}
+
+enum MaterialKind {
+  MATERIAL_KIND_UNSPECIFIED = 0;
+  MATERIAL_KIND_TLS_CERT = 1;
+  MATERIAL_KIND_TLS_KEY = 2;
+  MATERIAL_KIND_TLS_CA = 3;
+  MATERIAL_KIND_REALITY_PRIVATE = 4;
+  MATERIAL_KIND_SHORT_ID = 5;
+}
+
+enum DnsMode {
+  DNS_MODE_UNSPECIFIED = 0;
+  DNS_MODE_REMOTE = 1;
+  DNS_MODE_LOCAL = 2;
+  DNS_MODE_OFF = 3;
+}
+
+enum AddressFamily {
+  ADDRESS_FAMILY_UNSPECIFIED = 0;
+  ADDRESS_FAMILY_IPV4 = 1;
+  ADDRESS_FAMILY_IPV6 = 2;
+  ADDRESS_FAMILY_IPV4_PREFER = 3;
+  ADDRESS_FAMILY_IPV6_PREFER = 4;
+}
+
+enum FaultAction {
+  FAULT_ACTION_UNSPECIFIED = 0;
+  FAULT_ACTION_REJECT = 1;
+  FAULT_ACTION_KEEP = 2;
+}
+
+// NodeConfigSpec 是单节点完整配置输入；一次生成该节点全部端口组。
+message NodeConfigSpec {
+  string node_id = 1;
+  NodeType node_type = 2;
+  string schema_version = 3;
+  repeated PortGroupConfig port_groups = 4;
+  repeated Material materials = 5;
+  string target_xray_version = 6; // 必须等于内置版本，否则 VERSION_INCOMPATIBLE
+}
+
+message PortGroupConfig {
+  string port_group_id = 1;
+  string name = 2;
+  repeated Inbound inbounds = 3;
+  repeated Client clients = 4;
+  TransportSecurity transport_security = 5;
+  repeated Outbound outbounds = 6;
+  Routing routing = 7;
+  Dns dns = 8;
+  Policy policy = 9;
+  FaultAction fault_action = 10;
+  TunnelBinding tunnel = 11;
+}
+
+message Inbound {
+  string tag = 1;
+  string listen = 2;
+  uint32 port = 3;
+  Protocol protocol = 4;
+  bytes settings = 5;           // 按协议序列化的 settings；由 xrayconf 解释
+  Sniffing sniffing = 6;
+  repeated Fallback fallbacks = 7;
+  repeated string source_allowlist = 8;
+}
+
+message Sniffing {
+  bool enabled = 1;
+  repeated string destination_override = 2;
+  repeated string domains_excluded = 3;
+}
+
+message Fallback {
+  string name = 1;
+  string alpn = 2;
+  string path = 3;
+  uint32 dest = 4;
+  string xver = 5;
+}
+
+message Client {
+  string email = 1;
+  string id = 2;               // UUID / 用户名
+  string password = 3;
+  string flow = 4;
+  uint32 level = 5;
+  string subscription_id = 6;
+}
+
+message TransportSecurity {
+  Transport transport = 1;
+  Security security = 2;
+  bytes settings = 3;
+  TlsMaterialRef tls_material = 4;
+  RealitySettings reality = 5;
+  FinalMask final_mask = 6;
+  Sockopt sockopt = 7;
+}
+
+message TlsMaterialRef {
+  string material_id = 1;
+}
+
+message RealitySettings {
+  string dest = 1;
+  repeated string server_names = 2;
+  string private_key = 3;
+  repeated string short_ids = 4;
+}
+
+message FinalMask {
+  bytes settings = 1;
+}
+
+message Sockopt {
+  string interface_name = 1;
+  string bind_address = 2;
+  bool tcp_fast_open = 3;
+  uint32 tcp_fast_open_qlen = 4;
+}
+
+message Outbound {
+  string tag = 1;
+  OutboundProtocol protocol = 2;
+  bytes settings = 3;
+  string interface_name = 4;   // 显式网卡；与隧道互斥
+  string bind_ip = 5;
+}
+
+message Routing {
+  repeated RoutingRule rules = 1;
+  string default_outbound_tag = 2;
+}
+
+message RoutingRule {
+  repeated string source_ip = 1;
+  repeated string source_port = 2;
+  repeated string network = 3;
+  repeated string protocol = 4;
+  repeated string attributes = 5;
+  repeated string ip = 6;
+  repeated string domain = 7;
+  repeated string user = 8;
+  repeated string port = 9;
+  repeated string inbound_tag = 10;
+  string outbound_tag = 11;
+  string balancer = 12;
+}
+
+message Dns {
+  DnsMode mode = 1;
+  AddressFamily family = 2;
+  repeated string servers = 3;
+  repeated DnsHost hosts = 4;
+}
+
+message DnsHost {
+  string domain = 1;
+  repeated string ips = 2;
+}
+
+message Policy {
+  repeated LevelPolicy levels = 1;
+  StatsPolicy stats = 2;
+  Limits limits = 3;           // 只渲染 Xray 可表达项；其余进 warnings
+}
+
+message LevelPolicy {
+  uint32 level = 1;
+  uint32 conn_idle_seconds = 2;
+  uint32 handshake_seconds = 3;
+  uint32 uplink_only_seconds = 4;
+  uint32 downlink_only_seconds = 5;
+  uint32 buffer_size = 6;
+}
+
+message StatsPolicy {
+  bool enabled = 1;
+}
+
+message Limits {
+  uint64 bandwidth_up = 1;     // 产生 LIMIT_UNSUPPORTED warning，不渲染 tc
+  uint64 bandwidth_down = 2;
+  uint32 max_connections = 3;
+}
+
+message TunnelBinding {
+  string tunnel_group_id = 1;
+  repeated TunnelPortMapping mappings = 2;
+  TlsMaterialRef tls_material = 3;
+  string transport = 4;        // VLESS / VMESS over RAW + TLS
+}
+
+message TunnelPortMapping {
+  string port_id = 1;
+  uint32 port_group_port = 2;
+  uint32 tunnel_port = 3;          // 独立分配，不要求等于 port_group_port
+  string protocol = 4;             // TCP / UDP
+}
+
+message Material {
+  string material_id = 1;
+  MaterialKind kind = 2;
+  bytes content = 3;               // 仅内存传输；不落日志
+  string fingerprint_sha256 = 4;
+}

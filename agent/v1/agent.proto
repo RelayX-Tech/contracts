@@ -1,0 +1,189 @@
+syntax = "proto3";
+
+package relayx.agent.v1;
+
+option go_package = "github.com/relayx-tech/contracts/gen/go/agent/v1;agentv1";
+
+import "agent/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+service AgentControlService {
+  rpc Hello(HelloRequest) returns (HelloResponse);
+  rpc Apply(AgentApplyRequest) returns (AgentApplyResponse);
+  rpc Rollback(AgentRollbackRequest) returns (AgentRollbackResponse);
+  rpc Status(StatusRequest) returns (StatusResponse);
+  rpc Perception(AgentPerceptionRequest) returns (AgentPerceptionResponse);
+  rpc Interfaces(InterfacesRequest) returns (InterfacesResponse);
+  rpc Probe(ProbeRequest) returns (ProbeResponse);
+  rpc Version(VersionRequest) returns (VersionResponse);
+  rpc Health(AgentHealthRequest) returns (AgentHealthResponse);
+}
+
+message HelloRequest {
+  AgentRequestMeta meta = 1;
+  string panel_version = 2;
+  string agent_version = 3;
+  string contract_version = 4;
+}
+message HelloResponse {
+  bool compatible = 1;
+  AgentBuildVersion version = 2;
+  string node_id = 3;
+  repeated string capabilities = 4;
+}
+
+message AgentApplyRequest {
+  AgentRequestMeta meta = 1;
+  string node_id = 2;
+  uint64 version = 3;
+  string config_hash = 4;
+  string config_json = 5;
+  repeated AgentMaterial materials = 6;
+  string schema_version = 7;
+  string xray_version = 8;
+}
+message AgentApplyResponse {
+  bool accepted = 1;
+  string state = 2;
+  uint64 version = 3;
+  string applied_hash = 4;
+  AgentKernelState kernel = 5;
+  AgentErrorDetail error = 6;
+  bool deduplicated = 7;
+}
+
+message AgentRollbackRequest {
+  AgentRequestMeta meta = 1;
+  string node_id = 2;
+  uint64 target_version = 3;
+  uint64 new_version = 4;
+  string config_hash = 5;
+  string config_json = 6;
+  repeated AgentMaterial materials = 7;
+  string reason = 8;
+}
+message AgentRollbackResponse {
+  bool accepted = 1;
+  string state = 2;
+  uint64 version = 3;
+  string applied_hash = 4;
+  AgentKernelState kernel = 5;
+  AgentErrorDetail error = 6;
+  bool deduplicated = 7;
+}
+
+message StatusRequest { AgentRequestMeta meta = 1; string node_id = 2; }
+message StatusResponse {
+  string node_id = 1;
+  string node_type = 2;
+  string agent_version = 3;
+  AgentBuildVersion core = 4;
+  AgentKernelState kernel = 5;
+  ResourceStatus resources = 6;
+  google.protobuf.Timestamp last_seen = 7;
+  string last_apply_state = 8;
+}
+
+message AgentPerceptionRequest {
+  AgentRequestMeta meta = 1;
+  string node_id = 2;
+  repeated string port_group_ids = 3;
+  bool include_traffic = 4;
+  bool include_connections = 5;
+}
+message AgentPerceptionResponse {
+  repeated AgentInboundPerception inbounds = 1;
+  repeated AgentOutboundPerception outbounds = 2;
+  AgentTraffic traffic = 3;
+  AgentConnections connections = 4;
+  AgentResources resources = 5;
+  repeated AgentEvent events = 6;
+}
+
+message AgentInboundPerception {
+  string tag = 1;
+  uint64 uplink_bytes = 2;
+  uint64 downlink_bytes = 3;
+  uint32 active_connections = 4;
+}
+message AgentOutboundPerception {
+  string tag = 1;
+  uint64 uplink_bytes = 2;
+  uint64 downlink_bytes = 3;
+  uint32 active_connections = 4;
+}
+message AgentTraffic {
+  uint64 uplink_bytes = 1;
+  uint64 downlink_bytes = 2;
+  uint64 uplink_rate = 3;
+  uint64 downlink_rate = 4;
+}
+message AgentConnections {
+  uint32 total = 1;
+  uint32 tcp = 2;
+  uint32 udp = 3;
+}
+message AgentResources {
+  double cpu_percent = 1;
+  uint64 memory_bytes = 2;
+  uint32 thread_count = 3;
+}
+message AgentEvent {
+  string type = 1;
+  google.protobuf.Timestamp at = 2;
+  string message = 3;
+}
+
+message InterfacesRequest { AgentRequestMeta meta = 1; string node_id = 2; }
+message InterfacesResponse {
+  repeated NetworkInterface interfaces = 1;
+}
+message NetworkInterface {
+  string name = 1;
+  string mac = 2;
+  uint32 mtu = 3;
+  bool up = 4;
+  repeated string addresses = 5;
+}
+
+message ProbeRequest {
+  AgentRequestMeta meta = 1;
+  string node_id = 2;
+  ProbeType type = 3;           // TCP / HTTP
+  string target = 4;            // host:port / URL
+  uint32 timeout_ms = 5;
+  string expected_status = 6;   // HTTP 可选
+}
+message ProbeResponse {
+  bool success = 1;
+  uint32 latency_ms = 2;
+  int32 status_code = 3;        // HTTP
+  string error = 4;
+}
+
+message VersionRequest { AgentRequestMeta meta = 1; string node_id = 2; }
+message VersionResponse { AgentBuildVersion version = 1; }
+
+message AgentHealthRequest { AgentRequestMeta meta = 1; string node_id = 2; }
+message AgentHealthResponse {
+  string status = 1;            // SERVING / NOT_SERVING
+  bool core_node_reachable = 2;
+  google.protobuf.Timestamp checked_at = 3;
+}
+
+message AgentKernelState {
+  string state = 1;
+  int32 pid = 2;
+  google.protobuf.Timestamp started_at = 3;
+  uint32 restarts = 4;
+  string xray_version = 5;
+  string config_hash = 6;
+  string last_error = 7;
+}
+
+message ResourceStatus {
+  double cpu_percent = 1;
+  uint64 memory_bytes = 2;
+  uint64 disk_free_bytes = 3;
+  uint64 load_average = 4;
+}

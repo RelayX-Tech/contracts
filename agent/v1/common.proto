@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package relayx.agent.v1;
+
+option go_package = "github.com/relayx-tech/contracts/gen/go/agent/v1;agentv1";
+
+import "google/protobuf/timestamp.proto";
+
+// Agent 侧独立定义消息，不跨包 import core.v1。
+
+message AgentRequestMeta {
+  string request_id = 1;
+  string operation_id = 2;
+  string contract_version = 3;
+  google.protobuf.Timestamp timestamp = 4;
+  string nonce = 5;
+  string actor = 6;
+}
+
+message AgentErrorDetail {
+  string code = 1;
+  string field = 2;
+  repeated AgentErrorItem details = 3;
+  string request_id = 4;
+  bool retryable = 5;
+  string message = 6;
+}
+
+message AgentErrorItem {
+  string field = 1;
+  string code = 2;
+  string message = 3;
+}
+
+message AgentBuildVersion {
+  string core_version = 1;
+  string schema_version = 2;
+  string contract_version = 3;
+  string agent_version = 4;
+  string xray_version = 5;
+}
+
+message AgentWarning {
+  string code = 1;
+  string field = 2;
+  string message = 3;
+}
+
+message AgentMaterial {
+  string material_id = 1;
+  AgentMaterialKind kind = 2;
+  bytes content = 3;
+  string fingerprint_sha256 = 4;
+}
+
+enum AgentMaterialKind {
+  AGENT_MATERIAL_KIND_UNSPECIFIED = 0;
+  AGENT_MATERIAL_KIND_TLS_CERT = 1;
+  AGENT_MATERIAL_KIND_TLS_KEY = 2;
+  AGENT_MATERIAL_KIND_TLS_CA = 3;
+  AGENT_MATERIAL_KIND_REALITY_PRIVATE = 4;
+  AGENT_MATERIAL_KIND_SHORT_ID = 5;
+}
+
+enum AgentNodeType {
+  AGENT_NODE_TYPE_UNSPECIFIED = 0;
+  AGENT_NODE_TYPE_ENTRY = 1;
+  AGENT_NODE_TYPE_TUNNEL = 2;
+}
+
+enum ProbeType {
+  PROBE_TYPE_UNSPECIFIED = 0;
+  PROBE_TYPE_TCP = 1;
+  PROBE_TYPE_HTTP = 2;
+}

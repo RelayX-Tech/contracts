@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package relayx.core.v1;
+
+option go_package = "github.com/relayx-tech/contracts/gen/go/core/v1;corev1";
+
+import "core/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+service HealthService {
+  rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+message HealthCheckRequest { RequestMeta meta = 1; }
+message HealthCheckResponse {
+  string status = 1;            // SERVING / NOT_SERVING
+  repeated ComponentHealth components = 2;
+  google.protobuf.Timestamp checked_at = 3;
+}
+message ComponentHealth {
+  string name = 1;              // config / xrayconf / contract / disk
+  string status = 2;
+  string message = 3;
+}

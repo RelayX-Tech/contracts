@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package relayx.core.v1;
+
+option go_package = "github.com/relayx-tech/contracts/gen/go/core/v1;corev1";
+
+import "core/v1/common.proto";
+
+service ToolsService {
+  rpc ScanReality(ScanRealityRequest) returns (ScanRealityResponse);
+  rpc GenerateX25519(GenerateX25519Request) returns (GenerateX25519Response);
+  rpc ValidateCertificate(ValidateCertificateRequest) returns (ValidateCertificateResponse);
+}
+
+message ScanRealityRequest {
+  RequestMeta meta = 1;
+  string target = 2;            // host:port
+  string sni = 3;
+  uint32 timeout_ms = 4;        // 默认 5000
+}
+message ScanRealityResponse {
+  bool reachable = 1;
+  uint32 latency_ms = 2;
+  string tls_version = 3;
+  repeated string alpn = 4;
+  string certificate_summary = 5; // 仅摘要；不返回私钥
+  repeated Warning warnings = 6;
+}
+
+message GenerateX25519Request { RequestMeta meta = 1; }
+message GenerateX25519Response {
+  string private_key = 1;       // 敏感；不落日志
+  string public_key = 2;
+}
+
+message ValidateCertificateRequest {
+  RequestMeta meta = 1;
+  bytes cert_pem = 2;
+  bytes key_pem = 3;
+  string server_name = 4;
+}
+message ValidateCertificateResponse {
+  bool valid = 1;
+  string not_after = 2;         // RFC3339
+  repeated string san = 3;
+  repeated ErrorDetail errors = 4;
+}
