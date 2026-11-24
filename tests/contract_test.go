@@ -63,7 +63,7 @@ func TestCoreServiceDescriptors(t *testing.T) {
 
 func TestAgentServiceDescriptor(t *testing.T) {
 	assertMethods(t, "AgentControlService", agentv1.AgentControlService_ServiceDesc,
-		"Hello", "Apply", "Rollback", "Status", "Perception", "Interfaces", "Probe", "Version", "Health")
+		"Hello", "Apply", "Rollback", "Status", "Perception", "Interfaces", "Probe", "Version", "Health", "Update")
 }
 
 func TestRegistrationServiceDescriptor(t *testing.T) {
