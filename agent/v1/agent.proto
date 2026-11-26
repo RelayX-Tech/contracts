@@ -17,6 +17,7 @@ service AgentControlService {
   rpc Probe(ProbeRequest) returns (ProbeResponse);
   rpc Version(VersionRequest) returns (VersionResponse);
   rpc Health(AgentHealthRequest) returns (AgentHealthResponse);
+  rpc Update(AgentUpdateRequest) returns (AgentUpdateResponse);
 }
 
 message HelloRequest {
@@ -82,6 +83,7 @@ message StatusResponse {
   ResourceStatus resources = 6;
   google.protobuf.Timestamp last_seen = 7;
   string last_apply_state = 8;
+  AgentUpdateState update_state = 9;
 }
 
 message AgentPerceptionRequest {
@@ -169,6 +171,34 @@ message AgentHealthResponse {
   string status = 1;            // SERVING / NOT_SERVING
   bool core_node_reachable = 2;
   google.protobuf.Timestamp checked_at = 3;
+}
+
+// Update 是 Agent 在线自升级（STO-004，minor 1.4.0）。
+message AgentUpdateRequest {
+  AgentRequestMeta meta = 1;
+  string node_id = 2;
+  string operation_id = 3;
+  string target_version = 4;
+  string source_url = 5;
+  string sha256 = 6;
+  string signature = 7;
+  uint32 deadline_seconds = 8;
+  string reason = 9; // upgrade | rollback
+}
+message AgentUpdateResponse {
+  bool accepted = 1;
+  string state = 2;
+  string current_version = 3;
+  AgentErrorDetail error = 4;
+}
+message AgentUpdateState {
+  string operation_id = 1;
+  string state = 2; // pending|downloading|verifying|applying|succeeded|failed|rolled_back
+  string target_version = 3;
+  uint32 progress_percent = 4;
+  string error_code = 5;
+  string error_message = 6;
+  google.protobuf.Timestamp updated_at = 7;
 }
 
 message AgentKernelState {

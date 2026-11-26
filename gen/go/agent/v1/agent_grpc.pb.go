@@ -28,6 +28,7 @@ const (
 	AgentControlService_Probe_FullMethodName      = "/relayx.agent.v1.AgentControlService/Probe"
 	AgentControlService_Version_FullMethodName    = "/relayx.agent.v1.AgentControlService/Version"
 	AgentControlService_Health_FullMethodName     = "/relayx.agent.v1.AgentControlService/Health"
+	AgentControlService_Update_FullMethodName     = "/relayx.agent.v1.AgentControlService/Update"
 )
 
 // AgentControlServiceClient is the client API for AgentControlService service.
@@ -43,6 +44,7 @@ type AgentControlServiceClient interface {
 	Probe(ctx context.Context, in *ProbeRequest, opts ...grpc.CallOption) (*ProbeResponse, error)
 	Version(ctx context.Context, in *VersionRequest, opts ...grpc.CallOption) (*VersionResponse, error)
 	Health(ctx context.Context, in *AgentHealthRequest, opts ...grpc.CallOption) (*AgentHealthResponse, error)
+	Update(ctx context.Context, in *AgentUpdateRequest, opts ...grpc.CallOption) (*AgentUpdateResponse, error)
 }
 
 type agentControlServiceClient struct {
@@ -143,6 +145,16 @@ func (c *agentControlServiceClient) Health(ctx context.Context, in *AgentHealthR
 	return out, nil
 }
 
+func (c *agentControlServiceClient) Update(ctx context.Context, in *AgentUpdateRequest, opts ...grpc.CallOption) (*AgentUpdateResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AgentUpdateResponse)
+	err := c.cc.Invoke(ctx, AgentControlService_Update_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AgentControlServiceServer is the server API for AgentControlService service.
 // All implementations must embed UnimplementedAgentControlServiceServer
 // for forward compatibility.
@@ -156,6 +168,7 @@ type AgentControlServiceServer interface {
 	Probe(context.Context, *ProbeRequest) (*ProbeResponse, error)
 	Version(context.Context, *VersionRequest) (*VersionResponse, error)
 	Health(context.Context, *AgentHealthRequest) (*AgentHealthResponse, error)
+	Update(context.Context, *AgentUpdateRequest) (*AgentUpdateResponse, error)
 	mustEmbedUnimplementedAgentControlServiceServer()
 }
 
@@ -192,6 +205,9 @@ func (UnimplementedAgentControlServiceServer) Version(context.Context, *VersionR
 }
 func (UnimplementedAgentControlServiceServer) Health(context.Context, *AgentHealthRequest) (*AgentHealthResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Health not implemented")
+}
+func (UnimplementedAgentControlServiceServer) Update(context.Context, *AgentUpdateRequest) (*AgentUpdateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
 }
 func (UnimplementedAgentControlServiceServer) mustEmbedUnimplementedAgentControlServiceServer() {}
 func (UnimplementedAgentControlServiceServer) testEmbeddedByValue()                             {}
@@ -376,6 +392,24 @@ func _AgentControlService_Health_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AgentControlService_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AgentUpdateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentControlServiceServer).Update(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AgentControlService_Update_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentControlServiceServer).Update(ctx, req.(*AgentUpdateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AgentControlService_ServiceDesc is the grpc.ServiceDesc for AgentControlService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -418,6 +452,10 @@ var AgentControlService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Health",
 			Handler:    _AgentControlService_Health_Handler,
+		},
+		{
+			MethodName: "Update",
+			Handler:    _AgentControlService_Update_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

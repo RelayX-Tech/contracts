@@ -604,6 +604,7 @@ type StatusResponse struct {
 	Resources      *ResourceStatus        `protobuf:"bytes,6,opt,name=resources,proto3" json:"resources,omitempty"`
 	LastSeen       *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=last_seen,json=lastSeen,proto3" json:"last_seen,omitempty"`
 	LastApplyState string                 `protobuf:"bytes,8,opt,name=last_apply_state,json=lastApplyState,proto3" json:"last_apply_state,omitempty"`
+	UpdateState    *AgentUpdateState      `protobuf:"bytes,9,opt,name=update_state,json=updateState,proto3" json:"update_state,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -692,6 +693,13 @@ func (x *StatusResponse) GetLastApplyState() string {
 		return x.LastApplyState
 	}
 	return ""
+}
+
+func (x *StatusResponse) GetUpdateState() *AgentUpdateState {
+	if x != nil {
+		return x.UpdateState
+	}
+	return nil
 }
 
 type AgentPerceptionRequest struct {
@@ -1770,6 +1778,275 @@ func (x *AgentHealthResponse) GetCheckedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+// Update 是 Agent 在线自升级（STO-004，minor 1.4.0）。
+type AgentUpdateRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Meta            *AgentRequestMeta      `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
+	NodeId          string                 `protobuf:"bytes,2,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	OperationId     string                 `protobuf:"bytes,3,opt,name=operation_id,json=operationId,proto3" json:"operation_id,omitempty"`
+	TargetVersion   string                 `protobuf:"bytes,4,opt,name=target_version,json=targetVersion,proto3" json:"target_version,omitempty"`
+	SourceUrl       string                 `protobuf:"bytes,5,opt,name=source_url,json=sourceUrl,proto3" json:"source_url,omitempty"`
+	Sha256          string                 `protobuf:"bytes,6,opt,name=sha256,proto3" json:"sha256,omitempty"`
+	Signature       string                 `protobuf:"bytes,7,opt,name=signature,proto3" json:"signature,omitempty"`
+	DeadlineSeconds uint32                 `protobuf:"varint,8,opt,name=deadline_seconds,json=deadlineSeconds,proto3" json:"deadline_seconds,omitempty"`
+	Reason          string                 `protobuf:"bytes,9,opt,name=reason,proto3" json:"reason,omitempty"` // upgrade | rollback
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *AgentUpdateRequest) Reset() {
+	*x = AgentUpdateRequest{}
+	mi := &file_agent_v1_agent_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AgentUpdateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AgentUpdateRequest) ProtoMessage() {}
+
+func (x *AgentUpdateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_v1_agent_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AgentUpdateRequest.ProtoReflect.Descriptor instead.
+func (*AgentUpdateRequest) Descriptor() ([]byte, []int) {
+	return file_agent_v1_agent_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *AgentUpdateRequest) GetMeta() *AgentRequestMeta {
+	if x != nil {
+		return x.Meta
+	}
+	return nil
+}
+
+func (x *AgentUpdateRequest) GetNodeId() string {
+	if x != nil {
+		return x.NodeId
+	}
+	return ""
+}
+
+func (x *AgentUpdateRequest) GetOperationId() string {
+	if x != nil {
+		return x.OperationId
+	}
+	return ""
+}
+
+func (x *AgentUpdateRequest) GetTargetVersion() string {
+	if x != nil {
+		return x.TargetVersion
+	}
+	return ""
+}
+
+func (x *AgentUpdateRequest) GetSourceUrl() string {
+	if x != nil {
+		return x.SourceUrl
+	}
+	return ""
+}
+
+func (x *AgentUpdateRequest) GetSha256() string {
+	if x != nil {
+		return x.Sha256
+	}
+	return ""
+}
+
+func (x *AgentUpdateRequest) GetSignature() string {
+	if x != nil {
+		return x.Signature
+	}
+	return ""
+}
+
+func (x *AgentUpdateRequest) GetDeadlineSeconds() uint32 {
+	if x != nil {
+		return x.DeadlineSeconds
+	}
+	return 0
+}
+
+func (x *AgentUpdateRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+type AgentUpdateResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Accepted       bool                   `protobuf:"varint,1,opt,name=accepted,proto3" json:"accepted,omitempty"`
+	State          string                 `protobuf:"bytes,2,opt,name=state,proto3" json:"state,omitempty"`
+	CurrentVersion string                 `protobuf:"bytes,3,opt,name=current_version,json=currentVersion,proto3" json:"current_version,omitempty"`
+	Error          *AgentErrorDetail      `protobuf:"bytes,4,opt,name=error,proto3" json:"error,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *AgentUpdateResponse) Reset() {
+	*x = AgentUpdateResponse{}
+	mi := &file_agent_v1_agent_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AgentUpdateResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AgentUpdateResponse) ProtoMessage() {}
+
+func (x *AgentUpdateResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_v1_agent_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AgentUpdateResponse.ProtoReflect.Descriptor instead.
+func (*AgentUpdateResponse) Descriptor() ([]byte, []int) {
+	return file_agent_v1_agent_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *AgentUpdateResponse) GetAccepted() bool {
+	if x != nil {
+		return x.Accepted
+	}
+	return false
+}
+
+func (x *AgentUpdateResponse) GetState() string {
+	if x != nil {
+		return x.State
+	}
+	return ""
+}
+
+func (x *AgentUpdateResponse) GetCurrentVersion() string {
+	if x != nil {
+		return x.CurrentVersion
+	}
+	return ""
+}
+
+func (x *AgentUpdateResponse) GetError() *AgentErrorDetail {
+	if x != nil {
+		return x.Error
+	}
+	return nil
+}
+
+type AgentUpdateState struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	OperationId     string                 `protobuf:"bytes,1,opt,name=operation_id,json=operationId,proto3" json:"operation_id,omitempty"`
+	State           string                 `protobuf:"bytes,2,opt,name=state,proto3" json:"state,omitempty"` // pending|downloading|verifying|applying|succeeded|failed|rolled_back
+	TargetVersion   string                 `protobuf:"bytes,3,opt,name=target_version,json=targetVersion,proto3" json:"target_version,omitempty"`
+	ProgressPercent uint32                 `protobuf:"varint,4,opt,name=progress_percent,json=progressPercent,proto3" json:"progress_percent,omitempty"`
+	ErrorCode       string                 `protobuf:"bytes,5,opt,name=error_code,json=errorCode,proto3" json:"error_code,omitempty"`
+	ErrorMessage    string                 `protobuf:"bytes,6,opt,name=error_message,json=errorMessage,proto3" json:"error_message,omitempty"`
+	UpdatedAt       *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *AgentUpdateState) Reset() {
+	*x = AgentUpdateState{}
+	mi := &file_agent_v1_agent_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AgentUpdateState) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AgentUpdateState) ProtoMessage() {}
+
+func (x *AgentUpdateState) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_v1_agent_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AgentUpdateState.ProtoReflect.Descriptor instead.
+func (*AgentUpdateState) Descriptor() ([]byte, []int) {
+	return file_agent_v1_agent_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *AgentUpdateState) GetOperationId() string {
+	if x != nil {
+		return x.OperationId
+	}
+	return ""
+}
+
+func (x *AgentUpdateState) GetState() string {
+	if x != nil {
+		return x.State
+	}
+	return ""
+}
+
+func (x *AgentUpdateState) GetTargetVersion() string {
+	if x != nil {
+		return x.TargetVersion
+	}
+	return ""
+}
+
+func (x *AgentUpdateState) GetProgressPercent() uint32 {
+	if x != nil {
+		return x.ProgressPercent
+	}
+	return 0
+}
+
+func (x *AgentUpdateState) GetErrorCode() string {
+	if x != nil {
+		return x.ErrorCode
+	}
+	return ""
+}
+
+func (x *AgentUpdateState) GetErrorMessage() string {
+	if x != nil {
+		return x.ErrorMessage
+	}
+	return ""
+}
+
+func (x *AgentUpdateState) GetUpdatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return nil
+}
+
 type AgentKernelState struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	State         string                 `protobuf:"bytes,1,opt,name=state,proto3" json:"state,omitempty"`
@@ -1785,7 +2062,7 @@ type AgentKernelState struct {
 
 func (x *AgentKernelState) Reset() {
 	*x = AgentKernelState{}
-	mi := &file_agent_v1_agent_proto_msgTypes[25]
+	mi := &file_agent_v1_agent_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1797,7 +2074,7 @@ func (x *AgentKernelState) String() string {
 func (*AgentKernelState) ProtoMessage() {}
 
 func (x *AgentKernelState) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_v1_agent_proto_msgTypes[25]
+	mi := &file_agent_v1_agent_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1810,7 +2087,7 @@ func (x *AgentKernelState) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AgentKernelState.ProtoReflect.Descriptor instead.
 func (*AgentKernelState) Descriptor() ([]byte, []int) {
-	return file_agent_v1_agent_proto_rawDescGZIP(), []int{25}
+	return file_agent_v1_agent_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *AgentKernelState) GetState() string {
@@ -1874,7 +2151,7 @@ type ResourceStatus struct {
 
 func (x *ResourceStatus) Reset() {
 	*x = ResourceStatus{}
-	mi := &file_agent_v1_agent_proto_msgTypes[26]
+	mi := &file_agent_v1_agent_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1886,7 +2163,7 @@ func (x *ResourceStatus) String() string {
 func (*ResourceStatus) ProtoMessage() {}
 
 func (x *ResourceStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_v1_agent_proto_msgTypes[26]
+	mi := &file_agent_v1_agent_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1899,7 +2176,7 @@ func (x *ResourceStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResourceStatus.ProtoReflect.Descriptor instead.
 func (*ResourceStatus) Descriptor() ([]byte, []int) {
-	return file_agent_v1_agent_proto_rawDescGZIP(), []int{26}
+	return file_agent_v1_agent_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *ResourceStatus) GetCpuPercent() float64 {
@@ -1988,7 +2265,7 @@ const file_agent_v1_agent_proto_rawDesc = "" +
 	"\fdeduplicated\x18\a \x01(\bR\fdeduplicated\"_\n" +
 	"\rStatusRequest\x125\n" +
 	"\x04meta\x18\x01 \x01(\v2!.relayx.agent.v1.AgentRequestMetaR\x04meta\x12\x17\n" +
-	"\anode_id\x18\x02 \x01(\tR\x06nodeId\"\x80\x03\n" +
+	"\anode_id\x18\x02 \x01(\tR\x06nodeId\"\xc6\x03\n" +
 	"\x0eStatusResponse\x12\x17\n" +
 	"\anode_id\x18\x01 \x01(\tR\x06nodeId\x12\x1b\n" +
 	"\tnode_type\x18\x02 \x01(\tR\bnodeType\x12#\n" +
@@ -1997,7 +2274,8 @@ const file_agent_v1_agent_proto_rawDesc = "" +
 	"\x06kernel\x18\x05 \x01(\v2!.relayx.agent.v1.AgentKernelStateR\x06kernel\x12=\n" +
 	"\tresources\x18\x06 \x01(\v2\x1f.relayx.agent.v1.ResourceStatusR\tresources\x127\n" +
 	"\tlast_seen\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\blastSeen\x12(\n" +
-	"\x10last_apply_state\x18\b \x01(\tR\x0elastApplyState\"\xe8\x01\n" +
+	"\x10last_apply_state\x18\b \x01(\tR\x0elastApplyState\x12D\n" +
+	"\fupdate_state\x18\t \x01(\v2!.relayx.agent.v1.AgentUpdateStateR\vupdateState\"\xe8\x01\n" +
 	"\x16AgentPerceptionRequest\x125\n" +
 	"\x04meta\x18\x01 \x01(\v2!.relayx.agent.v1.AgentRequestMetaR\x04meta\x12\x17\n" +
 	"\anode_id\x18\x02 \x01(\tR\x06nodeId\x12$\n" +
@@ -2081,7 +2359,33 @@ const file_agent_v1_agent_proto_rawDesc = "" +
 	"\x06status\x18\x01 \x01(\tR\x06status\x12.\n" +
 	"\x13core_node_reachable\x18\x02 \x01(\bR\x11coreNodeReachable\x129\n" +
 	"\n" +
-	"checked_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tcheckedAt\"\xf4\x01\n" +
+	"checked_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tcheckedAt\"\xc6\x02\n" +
+	"\x12AgentUpdateRequest\x125\n" +
+	"\x04meta\x18\x01 \x01(\v2!.relayx.agent.v1.AgentRequestMetaR\x04meta\x12\x17\n" +
+	"\anode_id\x18\x02 \x01(\tR\x06nodeId\x12!\n" +
+	"\foperation_id\x18\x03 \x01(\tR\voperationId\x12%\n" +
+	"\x0etarget_version\x18\x04 \x01(\tR\rtargetVersion\x12\x1d\n" +
+	"\n" +
+	"source_url\x18\x05 \x01(\tR\tsourceUrl\x12\x16\n" +
+	"\x06sha256\x18\x06 \x01(\tR\x06sha256\x12\x1c\n" +
+	"\tsignature\x18\a \x01(\tR\tsignature\x12)\n" +
+	"\x10deadline_seconds\x18\b \x01(\rR\x0fdeadlineSeconds\x12\x16\n" +
+	"\x06reason\x18\t \x01(\tR\x06reason\"\xa9\x01\n" +
+	"\x13AgentUpdateResponse\x12\x1a\n" +
+	"\baccepted\x18\x01 \x01(\bR\baccepted\x12\x14\n" +
+	"\x05state\x18\x02 \x01(\tR\x05state\x12'\n" +
+	"\x0fcurrent_version\x18\x03 \x01(\tR\x0ecurrentVersion\x127\n" +
+	"\x05error\x18\x04 \x01(\v2!.relayx.agent.v1.AgentErrorDetailR\x05error\"\x9c\x02\n" +
+	"\x10AgentUpdateState\x12!\n" +
+	"\foperation_id\x18\x01 \x01(\tR\voperationId\x12\x14\n" +
+	"\x05state\x18\x02 \x01(\tR\x05state\x12%\n" +
+	"\x0etarget_version\x18\x03 \x01(\tR\rtargetVersion\x12)\n" +
+	"\x10progress_percent\x18\x04 \x01(\rR\x0fprogressPercent\x12\x1d\n" +
+	"\n" +
+	"error_code\x18\x05 \x01(\tR\terrorCode\x12#\n" +
+	"\rerror_message\x18\x06 \x01(\tR\ferrorMessage\x129\n" +
+	"\n" +
+	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xf4\x01\n" +
 	"\x10AgentKernelState\x12\x14\n" +
 	"\x05state\x18\x01 \x01(\tR\x05state\x12\x10\n" +
 	"\x03pid\x18\x02 \x01(\x05R\x03pid\x129\n" +
@@ -2098,7 +2402,7 @@ const file_agent_v1_agent_proto_rawDesc = "" +
 	"cpuPercent\x12!\n" +
 	"\fmemory_bytes\x18\x02 \x01(\x04R\vmemoryBytes\x12&\n" +
 	"\x0fdisk_free_bytes\x18\x03 \x01(\x04R\rdiskFreeBytes\x12!\n" +
-	"\fload_average\x18\x04 \x01(\x04R\vloadAverage2\xf8\x05\n" +
+	"\fload_average\x18\x04 \x01(\x04R\vloadAverage2\xcd\x06\n" +
 	"\x13AgentControlService\x12F\n" +
 	"\x05Hello\x12\x1d.relayx.agent.v1.HelloRequest\x1a\x1e.relayx.agent.v1.HelloResponse\x12P\n" +
 	"\x05Apply\x12\".relayx.agent.v1.AgentApplyRequest\x1a#.relayx.agent.v1.AgentApplyResponse\x12Y\n" +
@@ -2110,7 +2414,8 @@ const file_agent_v1_agent_proto_rawDesc = "" +
 	"Interfaces\x12\".relayx.agent.v1.InterfacesRequest\x1a#.relayx.agent.v1.InterfacesResponse\x12F\n" +
 	"\x05Probe\x12\x1d.relayx.agent.v1.ProbeRequest\x1a\x1e.relayx.agent.v1.ProbeResponse\x12L\n" +
 	"\aVersion\x12\x1f.relayx.agent.v1.VersionRequest\x1a .relayx.agent.v1.VersionResponse\x12S\n" +
-	"\x06Health\x12#.relayx.agent.v1.AgentHealthRequest\x1a$.relayx.agent.v1.AgentHealthResponseB:Z8github.com/relayx-tech/contracts/gen/go/agent/v1;agentv1b\x06proto3"
+	"\x06Health\x12#.relayx.agent.v1.AgentHealthRequest\x1a$.relayx.agent.v1.AgentHealthResponse\x12S\n" +
+	"\x06Update\x12#.relayx.agent.v1.AgentUpdateRequest\x1a$.relayx.agent.v1.AgentUpdateResponseB:Z8github.com/relayx-tech/contracts/gen/go/agent/v1;agentv1b\x06proto3"
 
 var (
 	file_agent_v1_agent_proto_rawDescOnce sync.Once
@@ -2124,7 +2429,7 @@ func file_agent_v1_agent_proto_rawDescGZIP() []byte {
 	return file_agent_v1_agent_proto_rawDescData
 }
 
-var file_agent_v1_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
+var file_agent_v1_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
 var file_agent_v1_agent_proto_goTypes = []any{
 	(*HelloRequest)(nil),            // 0: relayx.agent.v1.HelloRequest
 	(*HelloResponse)(nil),           // 1: relayx.agent.v1.HelloResponse
@@ -2151,71 +2456,80 @@ var file_agent_v1_agent_proto_goTypes = []any{
 	(*VersionResponse)(nil),         // 22: relayx.agent.v1.VersionResponse
 	(*AgentHealthRequest)(nil),      // 23: relayx.agent.v1.AgentHealthRequest
 	(*AgentHealthResponse)(nil),     // 24: relayx.agent.v1.AgentHealthResponse
-	(*AgentKernelState)(nil),        // 25: relayx.agent.v1.AgentKernelState
-	(*ResourceStatus)(nil),          // 26: relayx.agent.v1.ResourceStatus
-	(*AgentRequestMeta)(nil),        // 27: relayx.agent.v1.AgentRequestMeta
-	(*AgentBuildVersion)(nil),       // 28: relayx.agent.v1.AgentBuildVersion
-	(*AgentMaterial)(nil),           // 29: relayx.agent.v1.AgentMaterial
-	(*AgentErrorDetail)(nil),        // 30: relayx.agent.v1.AgentErrorDetail
-	(*timestamppb.Timestamp)(nil),   // 31: google.protobuf.Timestamp
-	(ProbeType)(0),                  // 32: relayx.agent.v1.ProbeType
+	(*AgentUpdateRequest)(nil),      // 25: relayx.agent.v1.AgentUpdateRequest
+	(*AgentUpdateResponse)(nil),     // 26: relayx.agent.v1.AgentUpdateResponse
+	(*AgentUpdateState)(nil),        // 27: relayx.agent.v1.AgentUpdateState
+	(*AgentKernelState)(nil),        // 28: relayx.agent.v1.AgentKernelState
+	(*ResourceStatus)(nil),          // 29: relayx.agent.v1.ResourceStatus
+	(*AgentRequestMeta)(nil),        // 30: relayx.agent.v1.AgentRequestMeta
+	(*AgentBuildVersion)(nil),       // 31: relayx.agent.v1.AgentBuildVersion
+	(*AgentMaterial)(nil),           // 32: relayx.agent.v1.AgentMaterial
+	(*AgentErrorDetail)(nil),        // 33: relayx.agent.v1.AgentErrorDetail
+	(*timestamppb.Timestamp)(nil),   // 34: google.protobuf.Timestamp
+	(ProbeType)(0),                  // 35: relayx.agent.v1.ProbeType
 }
 var file_agent_v1_agent_proto_depIdxs = []int32{
-	27, // 0: relayx.agent.v1.HelloRequest.meta:type_name -> relayx.agent.v1.AgentRequestMeta
-	28, // 1: relayx.agent.v1.HelloResponse.version:type_name -> relayx.agent.v1.AgentBuildVersion
-	27, // 2: relayx.agent.v1.AgentApplyRequest.meta:type_name -> relayx.agent.v1.AgentRequestMeta
-	29, // 3: relayx.agent.v1.AgentApplyRequest.materials:type_name -> relayx.agent.v1.AgentMaterial
-	25, // 4: relayx.agent.v1.AgentApplyResponse.kernel:type_name -> relayx.agent.v1.AgentKernelState
-	30, // 5: relayx.agent.v1.AgentApplyResponse.error:type_name -> relayx.agent.v1.AgentErrorDetail
-	27, // 6: relayx.agent.v1.AgentRollbackRequest.meta:type_name -> relayx.agent.v1.AgentRequestMeta
-	29, // 7: relayx.agent.v1.AgentRollbackRequest.materials:type_name -> relayx.agent.v1.AgentMaterial
-	25, // 8: relayx.agent.v1.AgentRollbackResponse.kernel:type_name -> relayx.agent.v1.AgentKernelState
-	30, // 9: relayx.agent.v1.AgentRollbackResponse.error:type_name -> relayx.agent.v1.AgentErrorDetail
-	27, // 10: relayx.agent.v1.StatusRequest.meta:type_name -> relayx.agent.v1.AgentRequestMeta
-	28, // 11: relayx.agent.v1.StatusResponse.core:type_name -> relayx.agent.v1.AgentBuildVersion
-	25, // 12: relayx.agent.v1.StatusResponse.kernel:type_name -> relayx.agent.v1.AgentKernelState
-	26, // 13: relayx.agent.v1.StatusResponse.resources:type_name -> relayx.agent.v1.ResourceStatus
-	31, // 14: relayx.agent.v1.StatusResponse.last_seen:type_name -> google.protobuf.Timestamp
-	27, // 15: relayx.agent.v1.AgentPerceptionRequest.meta:type_name -> relayx.agent.v1.AgentRequestMeta
-	10, // 16: relayx.agent.v1.AgentPerceptionResponse.inbounds:type_name -> relayx.agent.v1.AgentInboundPerception
-	11, // 17: relayx.agent.v1.AgentPerceptionResponse.outbounds:type_name -> relayx.agent.v1.AgentOutboundPerception
-	12, // 18: relayx.agent.v1.AgentPerceptionResponse.traffic:type_name -> relayx.agent.v1.AgentTraffic
-	13, // 19: relayx.agent.v1.AgentPerceptionResponse.connections:type_name -> relayx.agent.v1.AgentConnections
-	14, // 20: relayx.agent.v1.AgentPerceptionResponse.resources:type_name -> relayx.agent.v1.AgentResources
-	15, // 21: relayx.agent.v1.AgentPerceptionResponse.events:type_name -> relayx.agent.v1.AgentEvent
-	31, // 22: relayx.agent.v1.AgentEvent.at:type_name -> google.protobuf.Timestamp
-	27, // 23: relayx.agent.v1.InterfacesRequest.meta:type_name -> relayx.agent.v1.AgentRequestMeta
-	18, // 24: relayx.agent.v1.InterfacesResponse.interfaces:type_name -> relayx.agent.v1.NetworkInterface
-	27, // 25: relayx.agent.v1.ProbeRequest.meta:type_name -> relayx.agent.v1.AgentRequestMeta
-	32, // 26: relayx.agent.v1.ProbeRequest.type:type_name -> relayx.agent.v1.ProbeType
-	27, // 27: relayx.agent.v1.VersionRequest.meta:type_name -> relayx.agent.v1.AgentRequestMeta
-	28, // 28: relayx.agent.v1.VersionResponse.version:type_name -> relayx.agent.v1.AgentBuildVersion
-	27, // 29: relayx.agent.v1.AgentHealthRequest.meta:type_name -> relayx.agent.v1.AgentRequestMeta
-	31, // 30: relayx.agent.v1.AgentHealthResponse.checked_at:type_name -> google.protobuf.Timestamp
-	31, // 31: relayx.agent.v1.AgentKernelState.started_at:type_name -> google.protobuf.Timestamp
-	0,  // 32: relayx.agent.v1.AgentControlService.Hello:input_type -> relayx.agent.v1.HelloRequest
-	2,  // 33: relayx.agent.v1.AgentControlService.Apply:input_type -> relayx.agent.v1.AgentApplyRequest
-	4,  // 34: relayx.agent.v1.AgentControlService.Rollback:input_type -> relayx.agent.v1.AgentRollbackRequest
-	6,  // 35: relayx.agent.v1.AgentControlService.Status:input_type -> relayx.agent.v1.StatusRequest
-	8,  // 36: relayx.agent.v1.AgentControlService.Perception:input_type -> relayx.agent.v1.AgentPerceptionRequest
-	16, // 37: relayx.agent.v1.AgentControlService.Interfaces:input_type -> relayx.agent.v1.InterfacesRequest
-	19, // 38: relayx.agent.v1.AgentControlService.Probe:input_type -> relayx.agent.v1.ProbeRequest
-	21, // 39: relayx.agent.v1.AgentControlService.Version:input_type -> relayx.agent.v1.VersionRequest
-	23, // 40: relayx.agent.v1.AgentControlService.Health:input_type -> relayx.agent.v1.AgentHealthRequest
-	1,  // 41: relayx.agent.v1.AgentControlService.Hello:output_type -> relayx.agent.v1.HelloResponse
-	3,  // 42: relayx.agent.v1.AgentControlService.Apply:output_type -> relayx.agent.v1.AgentApplyResponse
-	5,  // 43: relayx.agent.v1.AgentControlService.Rollback:output_type -> relayx.agent.v1.AgentRollbackResponse
-	7,  // 44: relayx.agent.v1.AgentControlService.Status:output_type -> relayx.agent.v1.StatusResponse
-	9,  // 45: relayx.agent.v1.AgentControlService.Perception:output_type -> relayx.agent.v1.AgentPerceptionResponse
-	17, // 46: relayx.agent.v1.AgentControlService.Interfaces:output_type -> relayx.agent.v1.InterfacesResponse
-	20, // 47: relayx.agent.v1.AgentControlService.Probe:output_type -> relayx.agent.v1.ProbeResponse
-	22, // 48: relayx.agent.v1.AgentControlService.Version:output_type -> relayx.agent.v1.VersionResponse
-	24, // 49: relayx.agent.v1.AgentControlService.Health:output_type -> relayx.agent.v1.AgentHealthResponse
-	41, // [41:50] is the sub-list for method output_type
-	32, // [32:41] is the sub-list for method input_type
-	32, // [32:32] is the sub-list for extension type_name
-	32, // [32:32] is the sub-list for extension extendee
-	0,  // [0:32] is the sub-list for field type_name
+	30, // 0: relayx.agent.v1.HelloRequest.meta:type_name -> relayx.agent.v1.AgentRequestMeta
+	31, // 1: relayx.agent.v1.HelloResponse.version:type_name -> relayx.agent.v1.AgentBuildVersion
+	30, // 2: relayx.agent.v1.AgentApplyRequest.meta:type_name -> relayx.agent.v1.AgentRequestMeta
+	32, // 3: relayx.agent.v1.AgentApplyRequest.materials:type_name -> relayx.agent.v1.AgentMaterial
+	28, // 4: relayx.agent.v1.AgentApplyResponse.kernel:type_name -> relayx.agent.v1.AgentKernelState
+	33, // 5: relayx.agent.v1.AgentApplyResponse.error:type_name -> relayx.agent.v1.AgentErrorDetail
+	30, // 6: relayx.agent.v1.AgentRollbackRequest.meta:type_name -> relayx.agent.v1.AgentRequestMeta
+	32, // 7: relayx.agent.v1.AgentRollbackRequest.materials:type_name -> relayx.agent.v1.AgentMaterial
+	28, // 8: relayx.agent.v1.AgentRollbackResponse.kernel:type_name -> relayx.agent.v1.AgentKernelState
+	33, // 9: relayx.agent.v1.AgentRollbackResponse.error:type_name -> relayx.agent.v1.AgentErrorDetail
+	30, // 10: relayx.agent.v1.StatusRequest.meta:type_name -> relayx.agent.v1.AgentRequestMeta
+	31, // 11: relayx.agent.v1.StatusResponse.core:type_name -> relayx.agent.v1.AgentBuildVersion
+	28, // 12: relayx.agent.v1.StatusResponse.kernel:type_name -> relayx.agent.v1.AgentKernelState
+	29, // 13: relayx.agent.v1.StatusResponse.resources:type_name -> relayx.agent.v1.ResourceStatus
+	34, // 14: relayx.agent.v1.StatusResponse.last_seen:type_name -> google.protobuf.Timestamp
+	27, // 15: relayx.agent.v1.StatusResponse.update_state:type_name -> relayx.agent.v1.AgentUpdateState
+	30, // 16: relayx.agent.v1.AgentPerceptionRequest.meta:type_name -> relayx.agent.v1.AgentRequestMeta
+	10, // 17: relayx.agent.v1.AgentPerceptionResponse.inbounds:type_name -> relayx.agent.v1.AgentInboundPerception
+	11, // 18: relayx.agent.v1.AgentPerceptionResponse.outbounds:type_name -> relayx.agent.v1.AgentOutboundPerception
+	12, // 19: relayx.agent.v1.AgentPerceptionResponse.traffic:type_name -> relayx.agent.v1.AgentTraffic
+	13, // 20: relayx.agent.v1.AgentPerceptionResponse.connections:type_name -> relayx.agent.v1.AgentConnections
+	14, // 21: relayx.agent.v1.AgentPerceptionResponse.resources:type_name -> relayx.agent.v1.AgentResources
+	15, // 22: relayx.agent.v1.AgentPerceptionResponse.events:type_name -> relayx.agent.v1.AgentEvent
+	34, // 23: relayx.agent.v1.AgentEvent.at:type_name -> google.protobuf.Timestamp
+	30, // 24: relayx.agent.v1.InterfacesRequest.meta:type_name -> relayx.agent.v1.AgentRequestMeta
+	18, // 25: relayx.agent.v1.InterfacesResponse.interfaces:type_name -> relayx.agent.v1.NetworkInterface
+	30, // 26: relayx.agent.v1.ProbeRequest.meta:type_name -> relayx.agent.v1.AgentRequestMeta
+	35, // 27: relayx.agent.v1.ProbeRequest.type:type_name -> relayx.agent.v1.ProbeType
+	30, // 28: relayx.agent.v1.VersionRequest.meta:type_name -> relayx.agent.v1.AgentRequestMeta
+	31, // 29: relayx.agent.v1.VersionResponse.version:type_name -> relayx.agent.v1.AgentBuildVersion
+	30, // 30: relayx.agent.v1.AgentHealthRequest.meta:type_name -> relayx.agent.v1.AgentRequestMeta
+	34, // 31: relayx.agent.v1.AgentHealthResponse.checked_at:type_name -> google.protobuf.Timestamp
+	30, // 32: relayx.agent.v1.AgentUpdateRequest.meta:type_name -> relayx.agent.v1.AgentRequestMeta
+	33, // 33: relayx.agent.v1.AgentUpdateResponse.error:type_name -> relayx.agent.v1.AgentErrorDetail
+	34, // 34: relayx.agent.v1.AgentUpdateState.updated_at:type_name -> google.protobuf.Timestamp
+	34, // 35: relayx.agent.v1.AgentKernelState.started_at:type_name -> google.protobuf.Timestamp
+	0,  // 36: relayx.agent.v1.AgentControlService.Hello:input_type -> relayx.agent.v1.HelloRequest
+	2,  // 37: relayx.agent.v1.AgentControlService.Apply:input_type -> relayx.agent.v1.AgentApplyRequest
+	4,  // 38: relayx.agent.v1.AgentControlService.Rollback:input_type -> relayx.agent.v1.AgentRollbackRequest
+	6,  // 39: relayx.agent.v1.AgentControlService.Status:input_type -> relayx.agent.v1.StatusRequest
+	8,  // 40: relayx.agent.v1.AgentControlService.Perception:input_type -> relayx.agent.v1.AgentPerceptionRequest
+	16, // 41: relayx.agent.v1.AgentControlService.Interfaces:input_type -> relayx.agent.v1.InterfacesRequest
+	19, // 42: relayx.agent.v1.AgentControlService.Probe:input_type -> relayx.agent.v1.ProbeRequest
+	21, // 43: relayx.agent.v1.AgentControlService.Version:input_type -> relayx.agent.v1.VersionRequest
+	23, // 44: relayx.agent.v1.AgentControlService.Health:input_type -> relayx.agent.v1.AgentHealthRequest
+	25, // 45: relayx.agent.v1.AgentControlService.Update:input_type -> relayx.agent.v1.AgentUpdateRequest
+	1,  // 46: relayx.agent.v1.AgentControlService.Hello:output_type -> relayx.agent.v1.HelloResponse
+	3,  // 47: relayx.agent.v1.AgentControlService.Apply:output_type -> relayx.agent.v1.AgentApplyResponse
+	5,  // 48: relayx.agent.v1.AgentControlService.Rollback:output_type -> relayx.agent.v1.AgentRollbackResponse
+	7,  // 49: relayx.agent.v1.AgentControlService.Status:output_type -> relayx.agent.v1.StatusResponse
+	9,  // 50: relayx.agent.v1.AgentControlService.Perception:output_type -> relayx.agent.v1.AgentPerceptionResponse
+	17, // 51: relayx.agent.v1.AgentControlService.Interfaces:output_type -> relayx.agent.v1.InterfacesResponse
+	20, // 52: relayx.agent.v1.AgentControlService.Probe:output_type -> relayx.agent.v1.ProbeResponse
+	22, // 53: relayx.agent.v1.AgentControlService.Version:output_type -> relayx.agent.v1.VersionResponse
+	24, // 54: relayx.agent.v1.AgentControlService.Health:output_type -> relayx.agent.v1.AgentHealthResponse
+	26, // 55: relayx.agent.v1.AgentControlService.Update:output_type -> relayx.agent.v1.AgentUpdateResponse
+	46, // [46:56] is the sub-list for method output_type
+	36, // [36:46] is the sub-list for method input_type
+	36, // [36:36] is the sub-list for extension type_name
+	36, // [36:36] is the sub-list for extension extendee
+	0,  // [0:36] is the sub-list for field type_name
 }
 
 func init() { file_agent_v1_agent_proto_init() }
@@ -2230,7 +2544,7 @@ func file_agent_v1_agent_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_agent_v1_agent_proto_rawDesc), len(file_agent_v1_agent_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   27,
+			NumMessages:   30,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
